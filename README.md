@@ -7,3 +7,5 @@ Robot find shortest path using Q-values, that is pretrained in a clamped area ar
 Multiple robots can work in warehouse simultaneously. A FSM (Finite State Machine) used to control task system.
 
 There is a FallBack mechanism used for when robots stuck or their movement fell into repetition. A* algorithm used for FallBack. When "stuckness" is solved, robots used Q-values for movement again.
+
+Unity version 6000.0.40f1
