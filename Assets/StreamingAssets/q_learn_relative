@@ -1,0 +1,85 @@
+import json, os, random
+
+window_radius = 4
+episodes = 15000
+max_steps = 100
+
+alpha = 0.05
+gamma = 0.95
+
+reward_step = -0.1
+reward_goal = 1.0
+
+epsilon_start = 1.0
+epsilon_end = 0.05
+epsilon_decay = 0.9993
+
+actions = [0, 1, 2, 3]
+
+
+def key(dx: int, dy: int) -> str:
+    return f"{dx}_{dy}"
+
+def step(x:int, y:int, action:int) -> tuple[int,int]:
+    if   action == 0: y += 1     # Yukarı
+    elif action == 1: y -= 1     # Aşağı
+    elif action == 2: x -= 1     # Sola
+    elif action == 3: x += 1     # Sağa
+
+    x = max(-window_radius, +(window_radius,x))
+    y = max(-window_radius, +(window_radius,y))
+
+    return x,y
+
+def train() -> dict[str, list[float]]:
+    q: dict[str, list[float]] = {}
+    epsilon = epsilon_start
+
+    for gx in range(-window_radius, window_radius + 1):
+        for gy in range(-window_radius, window_radius + 1):
+            if gx == 0 and gy == 0:
+                continue
+
+            for _ in range(episodes):
+                sx = sy = 0
+                for _ in range(max_steps):
+                    dx,dy = gx-sx, gy-sy
+                    s_key = key(dx, dy)
+                    q.setdefault(s_key, [0.0]*4)
+
+
+                    if random.random() < epsilon:
+                        a = random.choice(actions)
+                    else:
+                        a = max(actions, key=lambda act: q[s_key][act])
+                    
+                    nx, ny = step(sx, sy, a)
+                    ndx, ndy = gx-nx, gy-ny
+                    ns_key = key(ndx, ndy)
+                    q.setdefault(ns_key, [0.0] * 4)
+
+                    reward = reward_goal if (nx,ny) == (gx,gy) else reward_step
+                    best_next = max(q[ns_key])
+                    old  = q[s_key][a]
+
+                    q[s_key][a] = old + alpha*(reward + gamma*best_next - old)  #bellman equation
+
+                    sx, sy = nx, ny
+                    if (sx,sy) == (gx,gy):
+                        break
+
+                epsilon = max(epsilon_end, epsilon*epsilon_decay)
+    
+    print(f"✅ Training finished – states: {len(q)}")
+    return q
+
+if __name__ == "__main__":
+    q_table = train()
+    out_path = os.path.join("Assets", "StreamingAssets", "qtable_relative.json")
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(q_table, f, indent=2)
+    print(f"Saved table to: {out_path}")
+
+
+
