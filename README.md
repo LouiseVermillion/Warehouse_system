@@ -8,4 +8,6 @@ Multiple robots can work in warehouse simultaneously. A FSM (Finite State Machin
 
 There is a FallBack mechanism used for when robots stuck or their movement fell into repetition. A* algorithm used for FallBack. When "stuckness" is solved, robots used Q-values for movement again.
 
+[Simulation Video](./Warehouse_Simulation.mp4)
+
 Unity version 6000.0.40f1
